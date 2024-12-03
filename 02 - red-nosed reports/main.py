@@ -19,7 +19,7 @@ levels that are separated by spaces. For example:
 8 6 4 4 1
 1 3 6 7 9
 
-This example data contains six reports each containing five levels.
+This example data contains six reports (rows) each containing five levels (columns).
 
 The engineers are trying to figure out which reports are safe. The Red-Nosed reactor safety systems can only tolerate levels
 that are either gradually increasing or gradually decreasing. So, a report only counts as safe if both of the following are true:
