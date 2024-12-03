@@ -38,6 +38,29 @@ So, in this example, 2 reports are safe.
 
 Analyze the unusual data from the engineers. How many reports are safe?
 
+
+PART 2
+
+The engineers are surprised by the low number of safe reports until they realize they forgot to tell you about the Problem Dampener.
+
+The Problem Dampener is a reactor-mounted module that lets the reactor safety systems tolerate a single bad level in what would otherwise
+be a safe report. It's like the bad level never happened!
+
+Now, the same rules apply as before, except if removing a single level from an unsafe report would make it safe, the report instead counts
+as safe.
+
+More of the above example's reports are now safe:
+
+7 6 4 2 1: Safe without removing any level.
+1 2 7 8 9: Unsafe regardless of which level is removed.
+9 7 6 2 1: Unsafe regardless of which level is removed.
+1 3 2 4 5: Safe by removing the second level, 3.
+8 6 4 4 1: Safe by removing the third level, 4.
+1 3 6 7 9: Safe without removing any level.
+Thanks to the Problem Dampener, 4 reports are actually safe!
+
+Update your analysis by handling situations where the Problem Dampener can remove a single level from unsafe reports. How many reports are now safe?
+
 """
 
 def is_safe(levels):
@@ -68,6 +91,15 @@ def is_safe(levels):
 
     return True
 
+def is_safe_with_dampener(levels):
+    """Checks if the levels are safe with the dampener. Basically, it removes the
+    i element from the list and checks if it would be safe without it"""
+    for i in range(len(levels)):
+        # safe from up until i, and from i+1 to the end
+        if is_safe(levels[:i] + levels[i+1:]):
+            return True
+    return False
+
 def main():
     """Main function"""
     with open('input.txt', 'r') as f:
@@ -77,7 +109,14 @@ def main():
             levels = list(map(int, line.strip().split()))
             if is_safe(levels):
                 total += 1
-        print(total)
+        print('Total safe: ', total)
+        
+        dampener_total = 0
+        for line in lines:
+            levels = list(map(int, line.strip().split()))
+            if is_safe_with_dampener(levels):
+                dampener_total += 1
+        print('Total safe with dampener: ', dampener_total)
 
 if __name__ == '__main__':
     main()
