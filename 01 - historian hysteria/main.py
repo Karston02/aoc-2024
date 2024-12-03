@@ -94,13 +94,7 @@ from collections import Counter
 
 def sort_lists():
     """Sorts the lists into 2, separate, sorted lists"""
-    left_list = []
-    right_list = []
-    with open("input.txt", "r") as file:
-        for line in file:
-            left, right = line.split()
-            left_list.append(left)
-            right_list.append(right)
+    left_list, right_list = read_file()
     left_list.sort()
     right_list.sort()
     return left_list, right_list
@@ -112,8 +106,8 @@ def find_distance(left_list, right_list):
         total_distance += abs(int(left) - int(right))
     return total_distance
 
-def create_occurrences_dict():
-    """Creates a dictionary of the # of times each number in the left list appears in the right list"""
+def read_file():
+    """Reads the file and returns the two lists"""
     left_list = []
     right_list = []
     with open("input.txt", "r") as file:
@@ -121,6 +115,11 @@ def create_occurrences_dict():
             left, right = line.split()
             left_list.append(int(left))
             right_list.append(int(right))
+    return left_list, right_list
+
+def create_occurrences_dict():
+    """Creates a dictionary of the # of times each number in the left list appears in the right list"""
+    left_list, right_list = read_file()
     
     # count occurrences in the right list
     right_counts = Counter(right_list)
