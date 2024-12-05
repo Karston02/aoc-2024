@@ -125,10 +125,46 @@ def count_xmas_occurrences(grid):
 
     return total_count
 
+def read_file():
+    """Reads input text file"""
+    with open("input.txt") as f:
+        return f.read().strip().splitlines()
+
+def count_mas_in_x(grid):
+    """Count occurrences of X-MAS in the grid"""
+    rows = len(grid)
+    cols = len(grid[0])
+    total_count = 0
+
+    def is_x_mas(x, y):
+        """Check if (x, y) is the center of an X-MAS pattern"""
+        try:
+            # ASCII checks for diagonals
+            diag1 = ord(grid[x - 1][y - 1]) + ord(grid[x + 1][y + 1])  # top-left to bottom-right
+            diag2 = ord(grid[x - 1][y + 1]) + ord(grid[x + 1][y - 1])  # top-right to bottom-left
+            
+            # ensure both diagonals sum to M + S (don't care about order)
+            return (
+                grid[x][y] == 'A'  # center must be A
+                and diag1 == ord('M') + ord('S')  # diagonal 1 correct
+                and diag2 == ord('M') + ord('S')  # diagonal 2 correct
+            )
+        except IndexError:
+            return False  # out of bounds, not possible
+
+    # traverse the grid and count valid patterns
+    for x in range(1, rows - 1):  # avoid edges
+        for y in range(1, cols - 1):  # avoid edges
+            if is_x_mas(x, y):
+                total_count += 1
+
+    return total_count
+
 def main():
     """Main function"""
     grid = read_file()
-    print(count_xmas_occurrences(grid))
+    print("Crossword Pattern: ", count_xmas_occurrences(grid))
+    print("XMAS Patterns: ", count_mas_in_x(grid))
 
 
 if __name__ == "__main__":
