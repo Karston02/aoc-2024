@@ -116,7 +116,7 @@ def count_xmas_occurrences(grid):
                 (1, 1),  # top-left to bottom-right
                 (-1, -1),# bottom-right to top-left
                 (1, -1), # top-right to bottom-left
-                (-1, 1), # ottom-left to top-right
+                (-1, 1), # bottom-left to top-right
             ]
             # check all 8 directions for XMAS
             for dx, dy in directions:
