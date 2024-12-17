@@ -144,7 +144,7 @@ def execute_program(register_a, register_b, register_c, program):
 
         elif opcode == 5:  # out: output combo operand % 8
             value = combo_operand_value(operand, registers)
-            output.append(value & 7)  # Use bitwise AND for clarity
+            output.append(value & 7)  # Use bitwise AND for clarity (same as % 8)
 
         elif opcode == 6:  # bdv: divide A by 2^operand, store in B
             value = combo_operand_value(operand, registers)
@@ -185,7 +185,6 @@ def main():
     result = ",".join(map(str, output))
 
     print("Output:", result)
-
 
 if __name__ == "__main__":
     main()
