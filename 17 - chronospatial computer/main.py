@@ -175,6 +175,7 @@ def combo_operand_value(operand, registers):
         return registers['C']
 
 def main():
+    """Main function"""
     # read input
     register_a, register_b, register_c, program = read_input()
 
