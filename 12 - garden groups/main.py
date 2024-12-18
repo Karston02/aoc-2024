@@ -5,7 +5,7 @@ def read_file():
     with open("input.txt", "r") as file:
         return [line.strip() for line in file]
 
-def parse(inputs):
+def create_map(inputs):
     """Parse input into a map with coordinates"""
     map_dict = {}
     width = len(inputs[0])
@@ -129,14 +129,13 @@ def calculate_with_corner(parsed):
 
 def main():
     inputs = read_file()
-    parsed = parse(inputs)
+    parsed = create_map(inputs)
 
     part1_result = calculate_with_perimeter(parsed)
     print(f"Part 1 - Total price of fencing: {part1_result}")
 
     part2_result = calculate_with_corner(parsed)
     print(f"Part 2 - Total price of fencing: {part2_result}")
-
 
 if __name__ == "__main__":
     main()
