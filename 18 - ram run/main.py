@@ -42,19 +42,33 @@ def bfs_shortest_path(corrupted, grid_size=71):
                     visited.add((nx, ny))
                     queue.append(((nx, ny), steps + 1))
 
-    # if no path exists (shouldn't happen w our input)
+    # if no path exists (shouldn't happen w/ input)
     return -1
+
+def find_blocking_byte(byte_positions, grid_size=71):
+    """Finds the first byte that blocks the path to the exit"""
+    corrupted = set()
+
+    for x, y in byte_positions:
+        corrupted.add((x, y))
+
+        # check if there's still a path to the exit
+        if bfs_shortest_path(corrupted, grid_size) == -1:
+            return (x, y)
+
+    return None  # this shouldn't happen with our input, just in case
 
 def main():
     byte_positions = read_file()
 
-    # simulate the memory space with corrupted positions
+    # memory space with corrupted positions and find the shortest path
     corrupted = simulate_memory_space(byte_positions[:1024])
-
-    # find shortest path from top-left to bottom-right
     shortest_path = bfs_shortest_path(corrupted)
-
     print(f"Minimum Steps: {shortest_path}")
+
+    # find the first blocking byte
+    blocking_byte = find_blocking_byte(byte_positions)
+    print(f"First Blocking Byte: {blocking_byte[0]},{blocking_byte[1]}")
 
 if __name__ == "__main__":
     main()
