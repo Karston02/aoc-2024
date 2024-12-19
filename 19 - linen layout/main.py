@@ -56,7 +56,7 @@ def count_ways_to_form_design(design, towel_patterns):
         for towel in towel_patterns:
             # check if the towel can fit at the current position i
             if i >= len(towel) and design[i - len(towel):i] == towel:
-                # Aad the number of ways to form the design up to the previous position
+                # add the number of ways to form the design up to the previous position
                 dp[i] += dp[i - len(towel)]
     
     # final value of ways to form design
