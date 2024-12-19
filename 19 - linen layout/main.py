@@ -44,12 +44,38 @@ def count_possible_designs(designs, towel_patterns):
     
     return possible_count
 
+def count_ways_to_form_design(design, towel_patterns):
+    """Counts the number of ways to form a design (also uses DP)"""
+    # store number of ways to form the first i chars of the design.
+    dp = [0] * (len(design) + 1)
+    dp[0] = 1  # 1 way to form empty design
+    
+    # each position in the design
+    for i in range(1, len(design) + 1):
+        # check all possible towel patterns
+        for towel in towel_patterns:
+            # check if the towel can fit at the current position i
+            if i >= len(towel) and design[i - len(towel):i] == towel:
+                # Aad the number of ways to form the design up to the previous position
+                dp[i] += dp[i - len(towel)]
+    
+    # final value of ways to form design
+    return dp[len(design)]
+
+def count_all_possible_ways(designs, towel_patterns):
+    """Counts the total number of ways to form all designs"""
+    total_ways = 0
+    for design in designs:
+        total_ways += count_ways_to_form_design(design, towel_patterns)
+    return total_ways
 
 def main():
     """Main function"""
     input_data = read_file()
     towel_patterns, designs = parse_input(input_data)
-    print(count_possible_designs(designs, towel_patterns))
+    
+    print("# ways design can form: ", count_possible_designs(designs, towel_patterns))
+    print("# ways to form all designs: ", count_all_possible_ways(designs, towel_patterns))
 
 if __name__ == "__main__":
     main()
