@@ -88,7 +88,7 @@ def calculate_output(wire_values):
     for numeric_part, value in reversed(sorted_z_wires):
         binary_number += str(value)
     
-    # Step 5: convert the binary number to decimal
+    # convert the binary number to decimal
     decimal_number = int(binary_number, 2)
 
     return binary_number, decimal_number
