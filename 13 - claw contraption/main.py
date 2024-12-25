@@ -43,11 +43,11 @@ def solve_machine(machine, max_presses=100):
     return None
 
 def calculate_tokens(a_presses, b_presses):
-    """Calculate total tokens needed for given button presses"""
+    """Calculate total tokens needed for given button presses."""
     return 3 * a_presses + b_presses
 
 def solve_puzzle(input_text):
-    """Solve the entire puzzle for part 1, returning the minimum tokens needed"""
+    """Solve the entire puzzle, returning the minimum tokens needed."""
     machines = parse_input(input_text)
     total_tokens = 0
 
@@ -60,35 +60,55 @@ def solve_puzzle(input_text):
             
     return total_tokens
 
+def solve_machine_algebraically(machine):
+    """Solve a machine using determinants for linear systems"""
+    a_moves, b_moves, prize = machine
+    px, py = prize
+    
+    ax, ay = a_moves
+    bx, by = b_moves
+
+    # solve using determinants for linear systems
+    denominator = ax * by - bx * ay
+
+    # compute presses for buttons A and B
+    b_presses = (ax * py - px * ay) / denominator
+    a_presses = (px - b_presses * bx) / ax if ax != 0 else (py - b_presses * by) / ay
+
+    # ensure the solution is valid and integers
+    if b_presses.is_integer() and a_presses.is_integer() and a_presses >= 0 and b_presses >= 0:
+        return int(a_presses), int(b_presses)
+
+    return None
+
 def solve_puzzle_part2(input_text):
     """Solve the entire puzzle for part 2, returning the minimum tokens needed"""
     machines = parse_input(input_text)
+    offset = 10**13
     total_tokens = 0
 
-    # adjust prize coordinates for part 2
-    offset = 10**13
+    # adjust prize coordinates by offset
     machines = [
         (a_moves, b_moves, (prize[0] + offset, prize[1] + offset))
         for a_moves, b_moves, prize in machines
     ]
 
-    # solve each machine and calculate tokens
     for machine in machines:
-        solution = solve_machine(machine, max_presses=10**6)  #allow higher max presses
+        solution = solve_machine_algebraically(machine)
         if solution:
             tokens = calculate_tokens(*solution)
             total_tokens += tokens
-            
+
     return total_tokens
 
 def main():
     """Main function"""
     input_text = read_file()
-    part1_result = solve_puzzle(input_text)
-    print(f"Minimum tokens needed for Part 1: {part1_result}")
+    result = solve_puzzle(input_text)
+    print(f"Minimum tokens needed for part 1: {result}")
 
-    part2_result = solve_puzzle_part2(input_text)
-    print(f"Minimum tokens needed for Part 2: {part2_result}")
+    result = solve_puzzle_part2(input_text)
+    print(f"Minimum tokens needed for part 2: {result}")
 
 if __name__ == "__main__":
     main()
