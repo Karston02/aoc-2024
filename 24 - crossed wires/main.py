@@ -1,113 +1,128 @@
-def read_file():
-    """Read input"""
-    with open("input.txt", "r") as file:
-        return file.read().strip()
+from dataclasses import dataclass
 
-def parse_input(input_data):
-    """Parse input data"""
-    sections = input_data.split("\n\n")
-    wire_values = {}
-    gate_instructions = []
+@dataclass
+class Operation:
+    input1: str
+    operator: str
+    input2: str
+    result: str
 
-    # parse initial wire values
-    for line in sections[0].split("\n"):
+class CircuitProcessor:
+    def __init__(self, input_file):
+        self.wires = {}
+        self.operations = []
+        self.wrong_wires = set()
+        self.highest_z_wire = "z00"
+        self.load_circuit(input_file)
+
+    def load_circuit(self, input_file):
+        """Load and parse circuit data from input file"""
+        data = open(input_file).read().split("\n")
+        for line in self.parse_circuit_data(data):
+            if ":" in line:
+                self.process_wire_assignment(line)
+            elif "->" in line:
+                self.process_operation(line)
+
+    def parse_circuit_data(self, data):
+        """Remove empty lines and comments from input data"""
+        return [line.strip() for line in data if line.strip()]
+
+    def process_wire_assignment(self, line):
+        """Process direct wire value assignments"""
         wire, value = line.split(": ")
-        wire_values[wire] = int(value)
+        self.wires[wire] = int(value)
 
-    # parse gate instructions
-    for line in sections[1].split("\n"):
-        gate_instructions.append(line)
+    def process_operation(self, line):
+        """Process circuit operations and update highest z wire"""
+        input1, operator, input2, _, result = line.split(" ")
+        operation = Operation(input1, operator, input2, result)
+        self.operations.append(operation)
+        
+        if result.startswith('z'):
+            current_z_value = int(result[1:])
+            highest_z_value = int(self.highest_z_wire[1:])
+            if current_z_value > highest_z_value:
+                self.highest_z_wire = result
 
-    return wire_values, gate_instructions
+    @staticmethod
+    def execute_operation(op, val1, val2):
+        """Execute logical operations on two values"""
+        operations = {
+            "AND": lambda x, y: x & y,
+            "OR": lambda x, y: x | y,
+            "XOR": lambda x, y: x ^ y
+        }
+        return operations[op](val1, val2)
 
-def evaluate_gates(wire_values, gate_instructions):
-    """Evaluate all logic gates and resolve wire values"""
-    unresolved_instructions = gate_instructions[:]
-    resolved = set(wire_values.keys())
+    def identify_wrong_wires(self):
+        """Identify incorrectly connected wires based on circuit rules"""
+        for op in self.operations:
+            self._check_z_wire_rule(op)
+            self._check_xor_wire_rule(op)
+            self._check_and_wire_rule(op)
+            self._check_xor_or_rule(op)
 
-    while unresolved_instructions:
-        next_round_instructions = []
-        for instruction in unresolved_instructions:
-            parts = instruction.split(" -> ")
-            operation, output_wire = parts[0], parts[1]
+    def _check_z_wire_rule(self, op):
+        """Check if z-wires follow correct operation rules"""
+        if op.result.startswith('z') and op.operator != "XOR" and op.result != self.highest_z_wire:
+            self.wrong_wires.add(op.result)
 
-            try:
-                # ensure that inputs are available
-                if " AND " in operation:
-                    a, b = operation.split(" AND ")
-                    if a in wire_values and b in wire_values:
-                        wire_values[output_wire] = wire_values[a] & wire_values[b]
-                        resolved.add(output_wire)
-                    else:
-                        next_round_instructions.append(instruction)
+    def _check_xor_wire_rule(self, op):
+        """Check if XOR operations use correct wire types"""
+        if (op.operator == "XOR" and 
+            not any(w.startswith(('x', 'y', 'z')) for w in [op.result, op.input1, op.input2])):
+            self.wrong_wires.add(op.result)
 
-                elif " OR " in operation:
-                    a, b = operation.split(" OR ")
-                    if a in wire_values and b in wire_values:
-                        wire_values[output_wire] = wire_values[a] | wire_values[b]
-                        resolved.add(output_wire)
-                    else:
-                        next_round_instructions.append(instruction)
+    def _check_and_wire_rule(self, op):
+        """Check if AND operations follow circuit rules"""
+        if op.operator == "AND" and "x00" not in [op.input1, op.input2]:
+            for subop in self.operations:
+                if ((op.result == subop.input1 or op.result == subop.input2) 
+                    and subop.operator != "OR"):
+                    self.wrong_wires.add(op.result)
 
-                elif " XOR " in operation:
-                    a, b = operation.split(" XOR ")
-                    if a in wire_values and b in wire_values:
-                        wire_values[output_wire] = wire_values[a] ^ wire_values[b]
-                        resolved.add(output_wire)
-                    else:
-                        next_round_instructions.append(instruction)
+    def _check_xor_or_rule(self, op):
+        """Check if XOR outputs are used correctly with OR operations"""
+        if op.operator == "XOR":
+            for subop in self.operations:
+                if ((op.result == subop.input1 or op.result == subop.input2) 
+                    and subop.operator == "OR"):
+                    self.wrong_wires.add(op.result)
 
-            except KeyError:
-                # skip for now if one of the input wires is not yet resolved
-                next_round_instructions.append(instruction)
+    def process_circuit(self):
+        """Process all circuit operations until all wires have values"""
+        while self.operations:
+            op = self.operations.pop(0)
+            if op.input1 in self.wires and op.input2 in self.wires:
+                self.wires[op.result] = self.execute_operation(
+                    op.operator,
+                    self.wires[op.input1],
+                    self.wires[op.input2]
+                )
+            else:
+                self.operations.append(op)
 
-        unresolved_instructions = next_round_instructions
+    def get_z_wire_value(self):
+        """Get final binary value from z-wires"""
+        z_bits = [
+            str(self.wires[wire])
+            for wire in sorted(self.wires, reverse=True)
+            if wire.startswith('z')
+        ]
+        return int("".join(z_bits), 2)
 
-    return wire_values
-
-def calculate_output(wire_values):
-    """Calculate the final output number"""
-    # collect wires starting with z
-    z_wires = {}
-    for key, value in wire_values.items():
-        if key.startswith('z'):
-            z_wires[key] = value
-    
-    # sort z wires by their numeric part
-    sorted_z_wires = []
-    for key, value in z_wires.items():
-        # extract the numeric part of the wire name (i.e. z00 -> 0)
-        numeric_part = int(key[1:])
-        sorted_z_wires.append((numeric_part, value))
-    
-    # sort the wires by the numeric part
-    sorted_z_wires.sort()
-    
-    # build the binary number from the sorted wires (starting from least significant bit)
-    binary_number = ""
-    for numeric_part, value in reversed(sorted_z_wires):
-        binary_number += str(value)
-    
-    # convert the binary number to decimal
-    decimal_number = int(binary_number, 2)
-
-    return binary_number, decimal_number
+    def get_wrong_wires(self):
+        """Get comma-separated string of wrong wires"""
+        return ",".join(sorted(self.wrong_wires))
 
 def main():
-    """Main function"""
-    input_data = read_file()
-
-    # parse input data
-    wire_values, gate_instructions = parse_input(input_data)
-
-    # evaluate all gates
-    wire_values = evaluate_gates(wire_values, gate_instructions)
-
-    # calculate the output number
-    binary_output, decimal_output = calculate_output(wire_values)
-
-    print(f"Binary Output: {binary_output}")
-    print(f"Decimal Output: {decimal_output}")
+    processor = CircuitProcessor("input.txt")
+    processor.identify_wrong_wires()
+    processor.process_circuit()
+    
+    print(processor.get_z_wire_value())
+    print(processor.get_wrong_wires())
 
 if __name__ == "__main__":
     main()
