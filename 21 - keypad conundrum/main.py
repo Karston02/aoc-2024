@@ -93,8 +93,8 @@ def num_solve(key_start, key_end):
     memo_num[key_start, key_end] = min_score
     return min_inputs
 
-# Function to calculate the final score
 def calculate_score(codes):
+    """Calculate the score of the codes"""
     out = 0
     for code in codes:
         m = int(code[:-1])
@@ -102,10 +102,12 @@ def calculate_score(codes):
         out += len(s) * m
     return out
 
-if __name__ == "__main__":
-    # Read input and compute result
+def main():
     with open("input.txt") as file:
         codes = file.read().splitlines()
 
     result = calculate_score(codes)
     print("Score:", result)
+
+if __name__ == "__main__":
+    main()
